@@ -22,7 +22,7 @@ const PreferenceSchema: Schema<IPreference> = new Schema<IPreference>({
     timestamps: true
 });
 
-const PreferenceMongooseModel: Model<IPreference> =
+export const PreferenceMongooseModel: Model<IPreference> =
     mongoose.models.Preference || mongoose.model<IPreference>("Preference", PreferenceSchema);
 
 

@@ -1,5 +1,6 @@
 import { container, inject, injectable } from "tsyringe";
 import { UserController } from "../controllers/userController";
+import { verifyAdmin } from "../middleware/verifyAdmin.middleware";
 import { Router } from "express";
 
 @injectable()
@@ -24,8 +25,12 @@ export class UserRoutes {
             return this._userController.createUser(req, res)
         })
 
-        this.router.get('/:id', async (req, res) => {
+        this.router.get('/:id', verifyAdmin, async (req, res) => {
             return this._userController.findUser(req, res)
+        })
+
+        this.router.get('/', verifyAdmin, async (req, res) => {
+            return this._userController.getAllUsers(req, res)
         })
 
         this.router.post('/register', async (req, res) => {

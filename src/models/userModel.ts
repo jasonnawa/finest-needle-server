@@ -2,6 +2,7 @@ import { injectable, container } from "tsyringe";
 import mongoose, { Document, Schema, Model, ObjectId } from "mongoose"
 import { CreateUserDTO } from "../dtos/user-dto";
 import { Gender } from "../enums/user-enums";
+import { PreferenceMongooseModel } from "./preferenceModel";
 interface IUser extends Document {
     firstName?: string;
     lastName?: string;
@@ -37,12 +38,12 @@ const UserSchema: Schema<IUser> = new Schema<IUser>({
     religion: { type: String },
     relationshipGoals: { type: String },
     password: { type: String, required: false },
-    preference: { type: mongoose.Types.ObjectId, required: false }
+    preference: { type: mongoose.Types.ObjectId, required: false , ref: PreferenceMongooseModel}
 }, {
     timestamps: true
 });
 
-const UserMongooseModel: Model<IUser> =
+export const UserMongooseModel: Model<IUser> =
     mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
 
 
@@ -59,6 +60,10 @@ export default class UserModel {
 
     async findById(id: string) {
         return await UserMongooseModel.findById(id).exec();
+    }
+
+    async findAll(){
+        return await UserMongooseModel.find().populate("preference").lean();
     }
 
     async updateUser(user: Partial<IUser>) {

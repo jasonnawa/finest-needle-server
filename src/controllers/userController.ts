@@ -19,7 +19,13 @@ export class UserController {
 
 
     public async getAllUsers(req, res) {
-        console.log('users gotten')
+       const allUsers = await this.model.findAll()
+
+       if(!allUsers){
+        return res.status(400).json({ status: false, message: 'Error fetching users' })
+       }
+
+       return res.status(200).json({ status: false, message: 'Users fetched successfully' , data: allUsers })
     }
 
     public async createUser(req, res) {
@@ -86,6 +92,6 @@ export class UserController {
     }
 }
 
-export const registerUserController = () => {
+export const registerUserControllerDI = () => {
     container.register(UserController.name, { useClass: UserController })
 }

@@ -9,7 +9,9 @@ import {
   connectToDatabase,
 } from "./src/utils";
 import dotenv from "dotenv";
+import { AuthRoutes } from "./src/routes/authRoutes";
 import { UserRoutes } from "./src/routes/userRoutes";
+import { MatchRoutes } from "./src/routes/matchRoutes";
 import BaseRoutes from "./src/routes/baseRoutes";
 import corsOptions from "./src/config/corsOptions.config";
 import helmet from "helmet";
@@ -22,18 +24,24 @@ export default class Server {
   private readonly _app: express.Application;
   private readonly _envConfiguration: EnvConfiguration;
   private readonly _baseRoutes: BaseRoutes;
+  private readonly _authRoutes: AuthRoutes;
   private readonly _userRoutes: UserRoutes;
+  private readonly _matchRoutes: MatchRoutes;
 
   constructor(
     @inject(EnvConfiguration.name) envConfig: EnvConfiguration,
     @inject(BaseRoutes.name) baseRoutes: BaseRoutes,
-    @inject(UserRoutes.name) userRoutes: UserRoutes
+    @inject(AuthRoutes.name) authRoutes: AuthRoutes,
+    @inject(UserRoutes.name) userRoutes: UserRoutes,
+    @inject(MatchRoutes.name) matchRoutes: MatchRoutes
   ) {
     dotenv.config();
     this._app = express();
     this._envConfiguration = envConfig;
     this._baseRoutes = baseRoutes;
+    this._authRoutes = authRoutes;
     this._userRoutes = userRoutes;
+    this._matchRoutes = matchRoutes;
 
     this.setupMiddlewares();
     this.setupRoutes();
@@ -50,7 +58,9 @@ export default class Server {
 
   private setupRoutes() {
     this._app.use(`${this._apiVersion}/`, this._baseRoutes.router);
+    this._app.use(`${this._apiVersion}/auth`, this._authRoutes.router);
     this._app.use(`${this._apiVersion}/users`, this._userRoutes.router);
+    this._app.use(`${this._apiVersion}/matches`, this._matchRoutes.router);
   }
 
   public async start() {
