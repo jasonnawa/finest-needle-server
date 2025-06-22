@@ -63,7 +63,7 @@ export default class UserModel {
     }
 
     async findAll(){
-        return await UserMongooseModel.find().populate("preference").lean();
+        return await UserMongooseModel.find().select("-password -__v").populate("preference").lean();
     }
 
     async updateUser(user: Partial<IUser>) {

@@ -25,7 +25,7 @@ export class UserController {
         return res.status(400).json({ status: false, message: 'Error fetching users' })
        }
 
-       return res.status(200).json({ status: false, message: 'Users fetched successfully' , data: allUsers })
+       return res.status(200).json({ status: true, message: 'Users fetched successfully' , data: allUsers })
     }
 
     public async createUser(req, res) {
