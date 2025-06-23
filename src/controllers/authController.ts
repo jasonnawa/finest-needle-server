@@ -36,12 +36,12 @@ export default class AuthController {
     // Set HTTP-only cookie
     res.cookie("auth_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: "strict",
+      sameSite: "none",
     });
 
-    return res.json({ status: true, message: "Signed in" , token: token});
+    return res.json({ status: true, message: "Signed in"});
   }
 
   public async signout(req: Request, res: Response) {
