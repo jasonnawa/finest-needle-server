@@ -25,7 +25,15 @@ export class UserController {
         return res.status(400).json({ status: false, message: 'Error fetching users' })
        }
 
-       return res.status(200).json({ status: true, message: 'Users fetched successfully' , data: allUsers })
+        // Convert image buffer to Base64 for each user
+    const usersWithBase64 = allUsers.map((user) => ({
+        ...user,
+        profileImage: user.profileImage?.data
+          ? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString('base64')}`
+          : null,
+      }));
+
+       return res.status(200).json({ status: true, message: 'Users fetched successfully' , data: usersWithBase64 })
     }
 
     public async createUser(req, res) {
@@ -39,12 +47,20 @@ export class UserController {
 
     public async registerUser(req, res) {
         try {
+            console.log('req.file', req.file);
+
             const registerUserDto: RegisterUserDTO = req.body;
+            const profileImage = req.file ? {
+                data: req.file.buffer,
+                contentType: req.file.mimetype,
+              }
+            : undefined;
+
             console.log('data', registerUserDto)
             let { preferenceCountry, preferenceLocation, preferenceLoveLanguage, preferenceLifestyle, preferenceType, ...user } = registerUserDto;
 
             // Step 1: Create user
-            const newUser = await this.model.createUser(user);
+            const newUser = await this.model.createUser({...user, profileImage});
             if (!newUser) {
                 return res.status(400).json({ status: false, message: 'Error registering user' });
             }

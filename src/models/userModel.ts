@@ -20,6 +20,10 @@ interface IUser extends Document {
     relationshipGoals?: string;
     password?: string;
     preference?: ObjectId;
+    profileImage?: {
+        data: Buffer,
+        contentType: string
+    } 
 }
 
 const UserSchema: Schema<IUser> = new Schema<IUser>({
@@ -38,7 +42,11 @@ const UserSchema: Schema<IUser> = new Schema<IUser>({
     religion: { type: String },
     relationshipGoals: { type: String },
     password: { type: String, required: false },
-    preference: { type: mongoose.Types.ObjectId, required: false , ref: PreferenceMongooseModel}
+    preference: { type: mongoose.Types.ObjectId, required: false , ref: PreferenceMongooseModel},
+    profileImage: {
+        data: Buffer,
+        contentType: String,
+      },
 }, {
     timestamps: true
 });

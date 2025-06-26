@@ -16,6 +16,10 @@ export interface CreateUserDTO {
   religion?: string;
   relationshipGoals?: string;
   password?: string;
+  profileImage?: {
+    data: Buffer,
+    contentType: String,
+  },
 }
 
 export interface RegisterUserDTO extends CreateUserDTO {
