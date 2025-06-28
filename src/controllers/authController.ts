@@ -13,7 +13,6 @@ export default class AuthController {
   public async signin(req, res) {
     const { email, password } = req.body;
 
-
     const adminEmail = this._envConfiguration.ADMIN_EMAIL;
     const adminPasswordHash = this._envConfiguration.ADMIN_PASSWORD_HASH;
     const jwtSecret = this._envConfiguration.JWT_SECRET;
@@ -33,19 +32,10 @@ export default class AuthController {
 
     const token = jwt.sign({ role: "admin" }, jwtSecret, { expiresIn: "7d" });
 
-    // Set HTTP-only cookie
-    res.cookie("auth_token", token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: "none",
-    });
-
-    return res.json({ status: true, message: "Signed in"});
+    return res.json({ status: true, token, message: "Signed in" });
   }
 
   public async signout(req: Request, res: Response) {
-    res.clearCookie("auth_token");
     return res.json({ status: true, message: "Signed out" });
   }
 }
