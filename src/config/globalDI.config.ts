@@ -13,11 +13,19 @@ import { registerUserRoutesDI } from "../routes/userRoutes";
 import { registerMatchRoutesDI } from "../routes/matchRoutes";
 
 import { registerEnvConfigurationDI } from "../utils/env-config";
+import { registerStripeControllerDI } from "../controllers/stripeController";
+import { registerStripeRoutesDI } from "../routes/stripeRoutes";
+import { registerStripeWebhookControllerDI } from "../webhooks/stripeWebhook";
+import { registerWebhookRoutesDI } from "../webhooks/webhookRoutes";
 export default class GlobalDIConfig{
 
     public static registerAllDI(){
         console.log("Registering all DI");
         registerEnvConfigurationDI()
+        registerStripeControllerDI()
+        registerStripeRoutesDI()
+        registerStripeWebhookControllerDI()
+        registerWebhookRoutesDI()
 
         registerBaseRoutesDI()
         registerAuthRoutesDI()

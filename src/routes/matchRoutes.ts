@@ -23,6 +23,10 @@ export class MatchRoutes {
     this.router.get("/", verifyAdmin, async (req, res) => {
       return this._matchController.getAllMatches(req, res);
     });
+
+    this.router.delete('/', verifyAdmin, async(req, res)=> {
+      return this._matchController.unmatch(req, res)
+    })
   }
 }
 

@@ -11,6 +11,8 @@ public readonly MONGO_URI: string = process.env.MONGO_URI
 public readonly ADMIN_EMAIL: string = process.env.ADMIN_EMAIL
 public readonly ADMIN_PASSWORD_HASH: string = process.env.ADMIN_PASSWORD_HASH
 public readonly JWT_SECRET: string = process.env.JWT_SECRET
+public readonly STRIPE_SECRET_KEY: string = process.env.STRIPE_SECRET_KEY
+public readonly STRIPE_WEBHOOK_SECRET: string = process.env.STRIPE_WEBHOOK_SECRET
 }
 
 export const registerEnvConfigurationDI = () => {

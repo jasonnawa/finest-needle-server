@@ -1,7 +1,7 @@
 import { injectable, container } from "tsyringe";
 import mongoose, { Document, Schema, Model, ObjectId } from "mongoose"
 import { CreateUserDTO } from "../dtos/user-dto";
-import { Gender } from "../enums/user-enums";
+import { Gender, PaymentStatus } from "../enums/user-enums";
 import { PreferenceMongooseModel } from "./preferenceModel";
 interface IUser extends Document {
     firstName?: string;
@@ -23,7 +23,9 @@ interface IUser extends Document {
     profileImage?: {
         data: Buffer,
         contentType: string
-    } 
+    },
+    paymentStatus: PaymentStatus,
+    isMatched: Boolean
 }
 
 const UserSchema: Schema<IUser> = new Schema<IUser>({
@@ -47,6 +49,8 @@ const UserSchema: Schema<IUser> = new Schema<IUser>({
         data: Buffer,
         contentType: String,
       },
+    paymentStatus: { type: String, enum:Object.values(PaymentStatus), default: PaymentStatus.UNPAID},
+    isMatched: {type: Boolean, default: false}
 }, {
     timestamps: true
 });
@@ -71,7 +75,7 @@ export default class UserModel {
     }
 
     async findAll(){
-        return await UserMongooseModel.find().select("-password -__v").populate("preference").lean();
+        return await UserMongooseModel.find({paymentStatus: PaymentStatus.PAID}).select("-password -__v").populate("preference").lean();
     }
 
     async updateUser(user: Partial<IUser>) {

@@ -4,3 +4,8 @@ export enum Gender {
     FEMALE = 'Female',
     OTHER = 'Other',
 }
+
+export enum PaymentStatus{
+    PAID = 'paid',
+    UNPAID = 'unpaid'
+}

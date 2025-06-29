@@ -55,6 +55,23 @@ export default class MatchModel {
   async deleteMatch(id: string) {
     return await MatchMongooseModel.findByIdAndDelete(id);
   }
+
+  public async deleteMatchByUsers(userOneId: string, userTwoId: string) {
+    try {
+      const result = await MatchMongooseModel.deleteOne({
+        $or: [
+          { userOne: userOneId, userTwo: userTwoId },
+          { userOne: userTwoId, userTwo: userOneId },
+        ],
+      });
+  
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('Error deleting match:', error);
+      return false;
+    }
+  }
+  
 }
 
 export const registerMatchModelDI = () => {

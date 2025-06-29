@@ -16,6 +16,8 @@ import BaseRoutes from "./src/routes/baseRoutes";
 import corsOptions from "./src/config/corsOptions.config";
 import helmet from "helmet";
 import morgan from "morgan";
+import { StripeRoutes } from "./src/routes/stripeRoutes";
+import { WebhookRoutes } from "./src/webhooks/webhookRoutes";
 
 @injectable()
 export default class Server {
@@ -27,13 +29,17 @@ export default class Server {
   private readonly _authRoutes: AuthRoutes;
   private readonly _userRoutes: UserRoutes;
   private readonly _matchRoutes: MatchRoutes;
+  private readonly _stripeRoutes: StripeRoutes;
+  private readonly _webhookRoutes: WebhookRoutes;
 
   constructor(
     @inject(EnvConfiguration.name) envConfig: EnvConfiguration,
     @inject(BaseRoutes.name) baseRoutes: BaseRoutes,
     @inject(AuthRoutes.name) authRoutes: AuthRoutes,
     @inject(UserRoutes.name) userRoutes: UserRoutes,
-    @inject(MatchRoutes.name) matchRoutes: MatchRoutes
+    @inject(MatchRoutes.name) matchRoutes: MatchRoutes,
+    @inject(StripeRoutes.name) stripeRoutes: StripeRoutes,
+    @inject(WebhookRoutes.name) webhookRoutes: WebhookRoutes
   ) {
     dotenv.config();
     this._app = express();
@@ -42,6 +48,8 @@ export default class Server {
     this._authRoutes = authRoutes;
     this._userRoutes = userRoutes;
     this._matchRoutes = matchRoutes;
+    this._stripeRoutes = stripeRoutes;
+    this._webhookRoutes = webhookRoutes;
 
     this.setupMiddlewares();
     this.setupRoutes();
@@ -49,6 +57,7 @@ export default class Server {
 
   private setupMiddlewares() {
     this._app.use(cors(corsOptions))
+    this._app.use(`${this._apiVersion}/webhooks/stripe`, express.raw({ type: 'application/json' }));
     this._app.use(cookieParser())
     this._app.use(helmet())
     this._app.use(morgan('dev'))
@@ -61,6 +70,8 @@ export default class Server {
     this._app.use(`${this._apiVersion}/auth`, this._authRoutes.router);
     this._app.use(`${this._apiVersion}/users`, this._userRoutes.router);
     this._app.use(`${this._apiVersion}/matches`, this._matchRoutes.router);
+    this._app.use(`${this._apiVersion}/stripe`, this._stripeRoutes.router);
+    this._app.use(`${this._apiVersion}/webhooks`, this._webhookRoutes.router);
   }
 
   public async start() {

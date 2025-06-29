@@ -11,7 +11,7 @@ export class UserController {
 
     constructor(
         @inject(UserModel.name) userModel: UserModel,
-        @inject(PreferenceModel.name) preferenceModel: PreferenceModel
+        @inject(PreferenceModel.name) preferenceModel: PreferenceModel,
     ) {
         this.model = userModel
         this.preferenceModel = preferenceModel
@@ -97,6 +97,25 @@ export class UserController {
         }
     }
 
+    public async updateUserToPaid(userId: string, status){
+        try{
+        const updatedUser = await this.model.updateUser({_id:userId, paymentStatus: status})
+        return !!updatedUser
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return false;
+      }
+    }
+
+    public async updateUserMatchStatus(userId: string, status){
+        try{
+        const updatedUser = await this.model.updateUser({_id:userId, isMatched: status})
+        return !!updatedUser
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return false;
+      }
+    }
 
     public async findUser(req, res) {
         const { id } = req.params
