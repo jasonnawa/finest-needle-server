@@ -4,6 +4,7 @@ import { injectable } from "tsyringe";
 import { CreateUserDTO, RegisterUserDTO } from "../dtos/user-dto";
 import PreferenceModel from "../models/preferenceModel";
 import cron from 'node-cron';
+import sharp from 'sharp';
 
 @injectable()
 export class UserController {
@@ -48,55 +49,85 @@ export class UserController {
 
     public async registerUser(req, res) {
         try {
-            console.log('req.file', req.file);
-
-            const registerUserDto: RegisterUserDTO = req.body;
-            const profileImage = req.file ? {
-                data: req.file.buffer,
-                contentType: req.file.mimetype,
-              }
-            : undefined;
-
-            console.log('data', registerUserDto)
-            let { preferenceCountry, preferenceLocation, preferenceLoveLanguage, preferenceLifestyle, preferenceType, ...user } = registerUserDto;
-
-            // Step 1: Create user
-            const newUser = await this.model.createUser({...user, profileImage});
-            if (!newUser) {
-                return res.status(400).json({ status: false, message: 'Error registering user' });
-            }
-
-            // Step 2: Create preference
-            const newPreference = await this.preferenceModel.createPreference({ preferenceCountry, preferenceLocation, preferenceLoveLanguage, preferenceLifestyle, preferenceType, });
-            if (!newPreference) {
-                // Rollback: optionally delete created user
-                await this.model.deleteUser(newUser._id);
-                return res.status(400).json({ status: false, message: 'Error creating preference' });
-            }
-
-            const plainUser = newUser.toObject ? newUser.toObject() : { ...newUser };
-            const updatedUser = await this.model.updateUser({
-                ...plainUser,
-                preference: newPreference._id,
-            });
-
-            if (!updatedUser) {
-                // Rollback both?
-                await this.model.deleteUser(newUser._id);
-                await this.preferenceModel.deletePreference(newPreference._id);
-                return res.status(400).json({ status: false, message: 'An error occurred while updating user' });
-            }
-
-            return res.status(200).json({
-                status: true,
-                message: 'Successfully registered user',
-                data: updatedUser,
-            });
-        } catch (error) {
-            console.error('Registration Error:', error);
-            return res.status(500).json({ status: false, message: 'Internal Server Error' });
+          const registerUserDto: RegisterUserDTO = req.body;
+      
+          let profileImage;
+          if (req.file) {
+            // • Resize to max width of 800px, compress to 80% quality JPEG
+            const optimizedBuffer = await sharp(req.file.buffer)
+              .resize({ width: 800, withoutEnlargement: true })
+              .jpeg({ quality: 80 })
+              .toBuffer();
+      
+            profileImage = {
+              data: optimizedBuffer,
+              contentType: 'image/jpeg',
+            };
+          }
+      
+          // Destructure out preference fields, leave the rest for user creation
+          const {
+            preferenceCountry,
+            preferenceLocation,
+            preferenceLoveLanguage,
+            preferenceLifestyle,
+            preferenceType,
+            ...userFields
+          } = registerUserDto;
+      
+          // Step 1: Create user + profileImage
+          const newUser = await this.model.createUser({
+            ...userFields,
+            profileImage,
+          });
+          if (!newUser) {
+            return res
+              .status(400)
+              .json({ status: false, message: 'Error registering user' });
+          }
+      
+          // Step 2: Create preference
+          const newPref = await this.preferenceModel.createPreference({
+            preferenceCountry,
+            preferenceLocation,
+            preferenceLoveLanguage,
+            preferenceLifestyle,
+            preferenceType,
+          });
+          if (!newPref) {
+            // Rollback
+            await this.model.deleteUser(newUser._id);
+            return res
+              .status(400)
+              .json({ status: false, message: 'Error creating preference' });
+          }
+      
+          // Step 3: Attach preference to user
+          const updated = await this.model.updateUser({
+            ...newUser.toObject(),
+            preference: newPref._id,
+          });
+          if (!updated) {
+            // Rollback both
+            await this.model.deleteUser(newUser._id);
+            await this.preferenceModel.deletePreference(newPref._id);
+            return res
+              .status(400)
+              .json({ status: false, message: 'Error updating user' });
+          }
+      
+          return res.status(200).json({
+            status: true,
+            message: 'Successfully registered user',
+            data: updated,
+          });
+        } catch (err) {
+          console.error('Registration Error:', err);
+          return res
+            .status(500)
+            .json({ status: false, message: 'Internal Server Error' });
         }
-    }
+      }
 
     public async updateUserToPaid(userId: string, status){
         try{
