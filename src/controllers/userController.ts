@@ -3,6 +3,7 @@ import UserModel from "../models/userModel";
 import { injectable } from "tsyringe";
 import { CreateUserDTO, RegisterUserDTO } from "../dtos/user-dto";
 import PreferenceModel from "../models/preferenceModel";
+import cron from 'node-cron';
 
 @injectable()
 export class UserController {
@@ -125,6 +126,36 @@ export class UserController {
         }
         return res.status(200).json({ status: true, message: "User retrieved successfully!", data: user })
     }
+
+    public async deleteUnpaidUsers() {
+        try {
+          console.log('🧹 Starting unpaid user cleanup...');
+    
+          const result = await this.model.deleteManyUnpaidStatus();
+    
+          console.log(`✅ Deleted ${result.deletedCount} unpaid users.`);
+          return result.deletedCount;
+        } catch (error) {
+          console.error('❌ Error deleting unpaid users:', error);
+          return 0;
+        }
+      }
+
+      public scheduleJob() {
+        // Runs every 3 hours
+        cron.schedule('0 */3 * * *', async () => {
+          console.log('🕐 Running DeleteUnpaidUsersCron...');
+    
+          try {
+            const deletedCount = await this.deleteUnpaidUsers();
+            console.log(`✅ Deleted ${deletedCount} unpaid users`);
+          } catch (error) {
+            console.error('❌ Error running DeleteUnpaidUsersCron:', error);
+          }
+        });
+    
+        console.log('CRON: connected user cron...');
+      }
 }
 
 export const registerUserControllerDI = () => {

@@ -18,6 +18,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { StripeRoutes } from "./src/routes/stripeRoutes";
 import { WebhookRoutes } from "./src/webhooks/webhookRoutes";
+import { UserController } from "./src/controllers/userController";
 
 @injectable()
 export default class Server {
@@ -31,6 +32,7 @@ export default class Server {
   private readonly _matchRoutes: MatchRoutes;
   private readonly _stripeRoutes: StripeRoutes;
   private readonly _webhookRoutes: WebhookRoutes;
+  private readonly _userController: UserController;
 
   constructor(
     @inject(EnvConfiguration.name) envConfig: EnvConfiguration,
@@ -39,7 +41,9 @@ export default class Server {
     @inject(UserRoutes.name) userRoutes: UserRoutes,
     @inject(MatchRoutes.name) matchRoutes: MatchRoutes,
     @inject(StripeRoutes.name) stripeRoutes: StripeRoutes,
-    @inject(WebhookRoutes.name) webhookRoutes: WebhookRoutes
+    @inject(WebhookRoutes.name) webhookRoutes: WebhookRoutes,
+
+    @inject(UserController.name) userController: UserController
   ) {
     dotenv.config();
     this._app = express();
@@ -51,8 +55,11 @@ export default class Server {
     this._stripeRoutes = stripeRoutes;
     this._webhookRoutes = webhookRoutes;
 
+    this._userController = userController;
+
     this.setupMiddlewares();
     this.setupRoutes();
+    this.startCron()
   }
 
   private setupMiddlewares() {
@@ -72,6 +79,10 @@ export default class Server {
     this._app.use(`${this._apiVersion}/matches`, this._matchRoutes.router);
     this._app.use(`${this._apiVersion}/stripe`, this._stripeRoutes.router);
     this._app.use(`${this._apiVersion}/webhooks`, this._webhookRoutes.router);
+  }
+
+  private startCron(){
+    this._userController.scheduleJob()
   }
 
   public async start() {
