@@ -4,7 +4,7 @@
     "build": "tsc && npm run copy-assets",
     "start": "node dist/index.js",
     "start:prod": "npm run build && npm run start",
-    "copy-assets": "copyfiles -u 2 src/assets/* dist/assets"
+    "copy-assets": "copyfiles -u 2 src/assets/* dist/src/assets"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
