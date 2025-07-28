@@ -19,6 +19,7 @@ import morgan from "morgan";
 import { StripeRoutes } from "./src/routes/stripeRoutes";
 import { WebhookRoutes } from "./src/webhooks/webhookRoutes";
 import { UserController } from "./src/controllers/userController";
+import { CourseRoutes } from "./src/routes/courseRoutes";
 
 @injectable()
 export default class Server {
@@ -32,6 +33,7 @@ export default class Server {
   private readonly _matchRoutes: MatchRoutes;
   private readonly _stripeRoutes: StripeRoutes;
   private readonly _webhookRoutes: WebhookRoutes;
+  private readonly _courseRoutes: CourseRoutes;
   private readonly _userController: UserController;
 
   constructor(
@@ -41,6 +43,7 @@ export default class Server {
     @inject(UserRoutes.name) userRoutes: UserRoutes,
     @inject(MatchRoutes.name) matchRoutes: MatchRoutes,
     @inject(StripeRoutes.name) stripeRoutes: StripeRoutes,
+    @inject(CourseRoutes.name) courseRoutes: CourseRoutes,
     @inject(WebhookRoutes.name) webhookRoutes: WebhookRoutes,
 
     @inject(UserController.name) userController: UserController
@@ -54,6 +57,7 @@ export default class Server {
     this._matchRoutes = matchRoutes;
     this._stripeRoutes = stripeRoutes;
     this._webhookRoutes = webhookRoutes;
+    this._courseRoutes = courseRoutes;
 
     this._userController = userController;
 
@@ -79,10 +83,13 @@ export default class Server {
     this._app.use(`${this._apiVersion}/matches`, this._matchRoutes.router);
     this._app.use(`${this._apiVersion}/stripe`, this._stripeRoutes.router);
     this._app.use(`${this._apiVersion}/webhooks`, this._webhookRoutes.router);
+    this._app.use(`${this._apiVersion}/courses`, this._courseRoutes.router);
+
   }
 
   private startCron(){
     this._userController.scheduleJob()
+    this._userController.siteUptimeMonitor()
   }
 
   public async start() {

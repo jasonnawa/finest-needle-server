@@ -24,6 +24,10 @@ export class StripeRoutes {
             return this._stripeController.createPaymentSession(req, res)
         })
 
+        this.router.post('/create-course-checkout-session', async (req, res) => {
+            return this._stripeController.createCoursePaymentSession(req, res)
+        })
+
     }
 }
 

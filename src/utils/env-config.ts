@@ -13,6 +13,7 @@ public readonly ADMIN_PASSWORD_HASH: string = process.env.ADMIN_PASSWORD_HASH
 public readonly JWT_SECRET: string = process.env.JWT_SECRET
 public readonly STRIPE_SECRET_KEY: string = process.env.STRIPE_SECRET_KEY
 public readonly STRIPE_WEBHOOK_SECRET: string = process.env.STRIPE_WEBHOOK_SECRET
+public readonly BACKEND_API_URL: string = process.env.BACKEND_API_URL
 }
 
 export const registerEnvConfigurationDI = () => {

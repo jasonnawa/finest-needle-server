@@ -3,15 +3,19 @@ import StripeController from "../controllers/stripeController";
 import Stripe from "stripe";
 import { UserController } from "../controllers/userController";
 import { Request, Response } from "express";
+import { NotificationService } from "../utils/messaging";
 
 @injectable()
 export default class StripeWebhookController {
   private _userController: UserController;
   private _stripeClient: StripeController;
+  private _notificationService: NotificationService
   constructor(
     @inject(UserController) userController: UserController,
+    @inject(NotificationService) notificationService: NotificationService,
     @inject(StripeController) _stripeClient: StripeController) {
     this._userController = userController;
+    this._notificationService = notificationService;
     this._stripeClient = _stripeClient
   }
 
@@ -32,11 +36,22 @@ export default class StripeWebhookController {
     // ✅ Handle the specific event types
     switch (event.type) {
       case 'checkout.session.completed':
-      
+
         const paymentIntent = await this._stripeClient.getPaymentIntent(event.data.object.payment_intent)
-     
+
         const userId = paymentIntent.metadata.userId
         const paymentStatus = event.data.object.payment_status
+
+
+        const email = paymentIntent.metadata.email
+        const course = paymentIntent.metadata.course_id
+
+        if (course && email) {
+          await this._notificationService.sendPDFEmail(email, 'Heres Your Course', 'Enjoy your day', course)
+          return res.status(200).json({ message: 'Recieved' });
+        }
+
+
 
         if (!userId || !paymentStatus) {
           console.error('❌ Missing userId or paymentStatus in session metadata');

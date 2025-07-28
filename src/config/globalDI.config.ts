@@ -17,6 +17,9 @@ import { registerStripeControllerDI } from "../controllers/stripeController";
 import { registerStripeRoutesDI } from "../routes/stripeRoutes";
 import { registerStripeWebhookControllerDI } from "../webhooks/stripeWebhook";
 import { registerWebhookRoutesDI } from "../webhooks/webhookRoutes";
+import { registerCourseControllerDI } from "../controllers/courseController";
+import { registerCourseModelDI } from "../models/courseModel";
+import { registerCourseRoutesDI } from "../routes/courseRoutes";
 export default class GlobalDIConfig{
 
     public static registerAllDI(){
@@ -39,6 +42,10 @@ export default class GlobalDIConfig{
         registerUserModelDI()
         registerPreferenceModelDI()
         registerMatchModelDI()
+
+        registerCourseControllerDI()
+        registerCourseModelDI()
+        registerCourseRoutesDI()
     }
 
 }
