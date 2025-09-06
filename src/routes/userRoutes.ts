@@ -23,8 +23,8 @@ export class UserRoutes {
       return this._userController.createUser(req, res);
     });
 
-    this.router.get("/:id", verifyAdmin, async (req, res) => {
-      return this._userController.findUser(req, res);
+    this.router.get("/pending", verifyAdmin, async (req, res) => {
+      return this._userController.getPendingUsers(req, res);
     });
 
     this.router.get("/", verifyAdmin, async (req, res) => {
@@ -33,6 +33,15 @@ export class UserRoutes {
 
     this.router.post("/register", upload.single('profileImage'), async (req, res) => {
       return this._userController.registerUser(req, res);
+    });
+
+    
+    this.router.get("/:id/mark-paid", verifyAdmin, async (req, res) => {
+      return this._userController.updateUserToPaidEndpoint(req, res);
+    });
+
+    this.router.get("/:id", verifyAdmin, async (req, res) => {
+      return this._userController.findUser(req, res);
     });
   }
 }

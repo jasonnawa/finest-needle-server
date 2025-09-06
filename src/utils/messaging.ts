@@ -33,4 +33,22 @@ export class NotificationService {
       ],
     });
   }
+
+   async sendEmail(to: string, subject: string, message: string) {
+
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Finest Needle" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      text: message,
+    });
+  }
 }

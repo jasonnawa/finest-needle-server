@@ -91,6 +91,13 @@ export default class UserModel {
       .lean();
   }
 
+    async findAllUnpaid() {
+    return await UserMongooseModel.find({ paymentStatus: PaymentStatus.UNPAID })
+      .select("-password -__v")
+      .populate("preference")
+      .lean();
+  }
+
   async deleteManyUnpaidStatus() {
     const cutoffTime = new Date(Date.now() - 20 * 60 * 1000);
 

@@ -6,12 +6,15 @@ import PreferenceModel from "../models/preferenceModel";
 import cron from 'node-cron';
 import sharp from 'sharp';
 import { EnvConfiguration } from "../utils";
+import { PaymentStatus } from "../enums/user-enums";
+import { NotificationService } from "../utils/messaging";
 
 @injectable()
 export class UserController {
   public readonly model: UserModel
   public readonly preferenceModel: PreferenceModel
   private readonly envConfiguration: EnvConfiguration
+  private readonly notificationService: NotificationService
 
   constructor(
     @inject(UserModel.name) userModel: UserModel,
@@ -21,6 +24,7 @@ export class UserController {
     this.model = userModel
     this.preferenceModel = preferenceModel
     this.envConfiguration = envConfiguration
+    this.notificationService = new NotificationService()
   }
 
 
@@ -41,6 +45,67 @@ export class UserController {
 
     return res.status(200).json({ status: true, message: 'Users fetched successfully', data: usersWithBase64 })
   }
+
+  public async getPendingUsers(req, res) {
+    const allUsers = await this.model.findAllUnpaid()
+
+    if (!allUsers) {
+      return res.status(400).json({ status: false, message: 'Error fetching users' })
+    }
+
+    // Convert image buffer to Base64 for each user
+    const usersWithBase64 = allUsers.map((user) => ({
+      ...user,
+      profileImage: user.profileImage?.data
+        ? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString('base64')}`
+        : null,
+    }));
+
+    return res.status(200).json({ status: true, message: 'Pending users fetched successfully', data: usersWithBase64 })
+  }
+
+  public async updateUserToPaidEndpoint(req, res) {
+    const { id } = req.params;
+
+    try {
+      const user = await this.model.findById(id);
+
+      if (!user) {
+        return res.status(404).json({
+          status: false,
+          message: "User not found",
+        });
+      }
+      const updatedUser = await this.model.updateUser({
+        _id: id,
+        paymentStatus: PaymentStatus.PAID,
+      });
+
+      if (!updatedUser) {
+        return res.status(400).json({
+          status: false,
+          message: "Failed to update user",
+        });
+      }
+
+      await this.notificationService.sendEmail(updatedUser.email, 'Payment Received', 
+        'Thank you for choosing Finest Needle. Your payment for user registration has been received.')
+
+      return res.status(200).json({
+        status: true,
+        message: "User marked as paid successfully",
+        data: updatedUser,
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return res.status(500).json({
+        status: false,
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  }
+
 
   public async createUser(req, res) {
     const userData: CreateUserDTO = req.body

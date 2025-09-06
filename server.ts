@@ -88,7 +88,6 @@ export default class Server {
   }
 
   private startCron(){
-    this._userController.scheduleJob()
     this._userController.siteUptimeMonitor()
   }
 
