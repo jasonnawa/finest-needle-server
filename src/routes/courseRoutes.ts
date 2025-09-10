@@ -1,6 +1,7 @@
 import { container, inject, injectable } from "tsyringe";
 import { CourseController } from "../controllers/courseController";
 import { Router } from "express";
+import { verifyAdmin } from "../middleware/verifyAdmin.middleware";
 
 @injectable()
 export class CourseRoutes {
@@ -18,6 +19,11 @@ export class CourseRoutes {
         // GET /api/courses
         this.router.get("/", async (req, res) => {
             return this._courseController.getAllCourses(req, res);
+        });
+
+        // POST /api/courses/send-email
+        this.router.post("/send-email", verifyAdmin, async (req, res) => {
+            return this._courseController.sendCourseToEmail(req, res);
         });
 
         // GET /api/courses/:id
